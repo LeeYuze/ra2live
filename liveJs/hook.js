@@ -11,13 +11,16 @@ const HookCore = function (api) {
 
     const gameApi = new GameApi(this, api)
 
-    //
-    // //
-    setTimeout(()=>{
-        // generateUnitObjectByPlayType(dict.playerType.AI, "APOC", dict.ObjectType.Vehicle, 100)
-        gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, "JUMPJET", GameApi.GameApiEnum.ObjectType.Infantry, 200)
-    },0)
-
     // 玩家自动部署基地车
+    gameApi.baseDeploySelected(GameApi.GameApiEnum.PlayerType.Player)
+
+    // 召唤单位
+    gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player,"E2",GameApi.GameApiEnum.ObjectType.Infantry, 50)
+
+    // 部署成功后才可以执行召唤
+    setInterval(()=>{
+        // 向玩家发射核弹
+        gameApi.activateSuperWeaponToUnitsByPlayer(GameApi.GameApiEnum.PlayerType.Player, GameApi.GameApiEnum.SuperWeaponType.MultiMissile)
+    },3000)
 
 }

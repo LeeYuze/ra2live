@@ -1,3 +1,38 @@
+class Utils {
+    static  getRandomByArray(array) {
+        // 随机生成一个索引，范围是数组的长度减一
+        const randomIndex = Math.floor(Math.random() * array.length);
+        // 返回对应索引的数组元素
+        return array[randomIndex];
+    }
+}
+
+/**
+ * gameHlper
+ *
+ * isPlayerDefeated
+ * areAlliedPlayers
+ * canPlaceBuilding
+ * getAdjacencyMap
+ * getBuildingRule
+ * getBuildingPlacementData
+ * getPlayers
+ * getPlayerData
+ * getAllTerrainObjects
+ * getAllUnits
+ * getVisibleUnits
+ * getGameObjectData
+ * getUnitData
+ * getAllSuperWeaponData
+ * getGeneralRules
+ * getRulesIni
+ * getArtIni
+ * generateRandomInt
+ * generateRandom
+ * getTickRate
+ * getCurrentTick
+ */
+
 class GameApi {
 
     static GameApiEnum = {
@@ -39,6 +74,16 @@ class GameApi {
             Scatter: 16,
             EnterTransport: 17,
             PlaceBomb: 18
+        },
+        // 超级武器类型映射
+        SuperWeaponType: {
+            MultiMissile: 0,
+            IronCurtain: 1,
+            LightningStorm: 2, // 闪电风暴
+            ChronoSphere: 3,
+            ChronoWarp: 4,
+            ParaDrop: 5,
+            AmerParaDrop: 6
         }
     }
 
@@ -47,6 +92,8 @@ class GameApi {
 
         //qWe - 获取当前游戏的单位情况
         this.gameUtils = gameUtils
+
+        this.gameHelper = new this.gameUtils.qWe.GameApi(game, null)
 
         this.initActionApi()
     }
@@ -185,11 +232,33 @@ class GameApi {
     /**
      * 基地车自动部署
      */
-    gameBaseDeploySelected(playName) {
-        var m = e.getVisibleUnits(this.name, "self", function (e) {
-            return d.includes(e.name)
-        });
-        console.log(m)
+    baseDeploySelected(playerType, callback) {
+        var playName = this.getPlayerName(playerType)
+        var unitsIds = this.gameHelper.getVisibleUnits(playName, "self");
+        unitsIds.length && this.playerActionApi.orderUnits([unitsIds[0]], GameApi.GameApiEnum.OrderType.DeploySelected);
     }
 
+    /**
+     * 向玩家单位发送核弹
+     */
+    activateSuperWeaponToUnitsByPlayer(playerType, superWeaponType) {
+        var player = this.getPlayer(playerType)
+        var playerName = this.getPlayerName(playerType)
+        var unitsIds = this.gameHelper.getVisibleUnits(playerName, "self");
+
+        // 随机获取一个单位
+        var unitId = Utils.getRandomByArray(unitsIds)
+        var unitData = this.gameHelper.getUnitData(unitId)
+
+        var unitDataTile = unitData.tile
+
+        var superWeaponRules = {
+            type: superWeaponType, // 假设要使用的是美国空投类型的超级武器
+            weaponType: "NukeCarrier" // 核弹需要这个代码
+        };
+
+        // 发射
+        this.game.traits.get(this.gameUtils.IIe.SuperWeaponsTrait).activateEffect(superWeaponRules, player, this.game, unitDataTile, null)
+
+    }
 }
