@@ -106,6 +106,9 @@ class GameApi {
         this.aiActionApi = new ActionApi(botManager.actionFactory, botManager.actionQueue, this.getPlayerName(GameApi.GameApiEnum.PlayerType.Ai), this.game)
     }
 
+    /**
+     * 生成作战单位
+     */
     generateUnitObject(player, unitName, unitType, count) {
         var o = () => {
             var self = this
@@ -209,6 +212,11 @@ class GameApi {
         }
     }
 
+    /**
+     * 获取玩家信息
+     * @param playerType
+     * @returns {*}
+     */
     getPlayer(playerType) {
         var gamePlayerMap = this.getPlayerOfMap()
 
@@ -219,6 +227,11 @@ class GameApi {
         }
     }
 
+    /**
+     * 获取玩家名称
+     * @param playerType
+     * @returns {*}
+     */
     getPlayerName(playerType) {
         var gamePlayerMap = this.getPlayerOfMap()
 
@@ -239,7 +252,7 @@ class GameApi {
     }
 
     /**
-     * 向玩家单位发送核弹
+     * 发射超级武器
      */
     activateSuperWeaponToUnitsByPlayer(playerType, superWeaponType) {
         var player = this.getPlayer(playerType)
@@ -259,6 +272,11 @@ class GameApi {
 
         // 发射
         this.game.traits.get(this.gameUtils.IIe.SuperWeaponsTrait).activateEffect(superWeaponRules, player, this.game, unitDataTile, null)
+    }
 
+    editGameCredits(playerType, credits) {
+        var player = this.getPlayer(playerType)
+        console.log(player)
+        player._credits = credits
     }
 }
