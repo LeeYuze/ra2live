@@ -84,6 +84,14 @@ class GameApi {
             ChronoWarp: 4,
             ParaDrop: 5,
             AmerParaDrop: 6
+        },
+        BotStates: {
+            Initial: 0,
+            Deployed: 1,
+            Attacking: 2,
+            Defending: 3,
+            Scouting: 4,
+            Defeated: 5
         }
     }
 
@@ -274,9 +282,30 @@ class GameApi {
         this.game.traits.get(this.gameUtils.IIe.SuperWeaponsTrait).activateEffect(superWeaponRules, player, this.game, unitDataTile, null)
     }
 
+    /**
+     * 修改游戏金额
+     */
     editGameCredits(playerType, credits) {
         var player = this.getPlayer(playerType)
-        console.log(player)
         player._credits = credits
+    }
+
+    /**
+     * 修改ai状态
+     */
+    editBotState(stateType) {
+        var bots = this.game.botManager.bots.values();
+        var bot = Array.from(bots)[0];
+        bot.botState = stateType;
+    }
+
+    /**
+     * 机器人强制攻击
+     */
+    forceAttackBot() {
+        var bots = this.game.botManager.bots.values();
+        var bot = Array.from(bots)[0];
+        bot.threatCache = 'attack'
+        this.editBotState(GameApi.GameApiEnum.BotStates.Attacking)
     }
 }
