@@ -1,9 +1,3 @@
-
-
-
-
-
-
 const HookCore = function (api) {
     console.log("hook core")
     console.log(this)
@@ -15,22 +9,34 @@ const HookCore = function (api) {
     gameApi.baseDeploySelected(GameApi.GameApiEnum.PlayerType.Player)
 
 
-
     // 部署成功后才可以执行召唤
-    setInterval(()=>{
-        // 向玩家发射核弹
+    setInterval(() => {
+        // // 向玩家发射核弹
         // gameApi.activateSuperWeaponToUnitsByPlayer(GameApi.GameApiEnum.PlayerType.Player, GameApi.GameApiEnum.SuperWeaponType.MultiMissile)
 
-        // 给AI生成飞行兵
-        gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Ai,"JUMPJET",GameApi.GameApiEnum.ObjectType.Infantry, 3)
-        // AI强制攻击
-        gameApi.forceAttackBot()
-    },5000)
+        // // 给AI生成
+        // gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Ai, "APOC", GameApi.GameApiEnum.ObjectType.Vehicle, 1, function () {
+        //     // AI强制攻击
+        //     gameApi.forceAttackBot()
+        // })
+    }, 2000)
 
 
+    // gameApi.editPlayerAllUnitsVeteran(GameApi.GameApiEnum.PlayerType.Player,GameApi.GameApiEnum.VeteranLevel.Elite)
+    // gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, "ZEP", GameApi.GameApiEnum.ObjectType.Aircraft, 1)
+    //
+    // setTimeout(() => {
+    //     // gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, "APOC", GameApi.GameApiEnum.ObjectType.Vehicle, 188)
+    //     // gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, "ZEP", GameApi.GameApiEnum.ObjectType.Vehicle, 1)
+    //     gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, "ZEP", GameApi.GameApiEnum.ObjectType.Vehicle, 5)
+    //     gameApi.editPlayerAllUnitsVeteran(GameApi.GameApiEnum.PlayerType.Player,GameApi.GameApiEnum.VeteranLevel.Elite)
+    //     gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, "ZEP", GameApi.GameApiEnum.ObjectType.Vehicle, 5)
+    //
+    // }, 5000)
 
-    setTimeout(()=>{
+
+    setTimeout(() => {
         gameApi.editGameCredits(GameApi.GameApiEnum.PlayerType.Player, 999999999)
         gameApi.editGameCredits(GameApi.GameApiEnum.PlayerType.Ai, 999999999)
-    },3000)
+    }, 3000)
 }

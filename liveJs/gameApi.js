@@ -1,10 +1,15 @@
 class Utils {
-    static  getRandomByArray(array) {
+    static getRandomByArray(array) {
         // 随机生成一个索引，范围是数组的长度减一
         const randomIndex = Math.floor(Math.random() * array.length);
         // 返回对应索引的数组元素
         return array[randomIndex];
     }
+
+    static getRandomNumber(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
 }
 
 /**
@@ -92,6 +97,11 @@ class GameApi {
             Defending: 3,
             Scouting: 4,
             Defeated: 5
+        },
+        VeteranLevel: {
+            None: 0,
+            Veteran: 1,
+            Elite: 2
         }
     }
 
@@ -118,40 +128,65 @@ class GameApi {
      * 生成作战单位
      */
     generateUnitObject(player, unitName, unitType, count) {
+
+
         var o = () => {
             var self = this
             var t = this.game;
             // 玩家信息
             var n = player;
-            // 玩家的开始坐标
+
+            // 修改一下，随机选一个基地生成
             var a = t.map.startingLocations[n.startLocation]
-            // 该玩家在本地图的坐标
-            var l = t.map.tiles.getByMapCoords(a.x, a.y);
+            console.log(a)
+
+            // 基地车NACNST GACNST
+            const playerObjects = player.objectsById.values()
+
+            Array.from(playerObjects).forEach(unit => {
+                if (unit.name === 'NACNST' || unit.name === 'GACNST') {
+                    a = unit.position.tile
+                    a.x = a.rx
+                    a.y = a.ry
+                }
+            })
+
 
             // var r = [].concat(this.gameUtils.$V(this.rules.infantryRules.values()), this.gameUtils.$V(this.rules.vehicleRules.values()))
 
             // 获取这个国家可以制造的兵种
             // var o = this.gameUtils.GVe.StartingUnitsGenerator.generate(this.gameOpts.unitCount, this.gameUtils.$V(this.rules.vehicleRules.keys()), r, n.country);
 
-            // 构建地图筛选器
-            var p,
-                d = [],
-                y = false,
-                m = new this.gameUtils._Ue.CardinalTileFinder(
+            const mCardinalTileFinder = () => {
+
+                var xOffset = Utils.getRandomNumber(-10, 10)
+                var yOffset = Utils.getRandomNumber(-10, 10)
+
+                // 该玩家在本地图的坐标
+                var l = t.map.tiles.getByMapCoords(a.x + xOffset, a.y + yOffset);
+
+                return new this.gameUtils._Ue.CardinalTileFinder(
                     t.map.tiles,
                     t.map.mapBounds,
                     l,
-                    4,
-                    4,
+                    2,
+                    2,
                     function (e) {
                         return !t.map.getGroundObjectsOnTile(e).find(function (e) {
                             return !(e.isSmudge() || (e.isOverlay() && e.isTiberium()));
                         }) && t.map.terrain.getPassableSpeed(e, self.gameUtils.zEe.SpeedType.Foot, false) > 0;
                     }
-                ),
+                )
+            }
+
+
+            // 构建地图筛选器
+            var p,
+                d = [],
+                y = false,
+                m = mCardinalTileFinder(),
                 v = new Map(),
                 b = 0;
-
 
             // 测试召唤
             for (var index = 0; index < count; index++) {
@@ -171,7 +206,7 @@ class GameApi {
                 }
                 // 查找可以用地图-结束
 
-                if (T) {
+                const generateCore = () => {
                     if (h = t.rules.getObject(s, u), u === this.gameUtils.zxe.ObjectType.Vehicle) {
                         c = t.createUnitForPlayer(h, n);
                         t.applyInitialVeteran(c, n);
@@ -196,6 +231,15 @@ class GameApi {
                         }
                     }
                 }
+
+                // if (T) {
+                //     generateCore()
+                // } else {
+                //     m = mCardinalTileFinder()
+                //     generateCore()
+                // }
+
+                generateCore()
             }
 
         }
@@ -203,12 +247,13 @@ class GameApi {
         o()
     }
 
-    generateUnitObjectByEnum(playerType, unitName, unitType, count) {
+    generateUnitObjectByEnum(playerType, unitName, unitType, count, cb) {
         if (GameApi.GameApiEnum.PlayerType.Player === playerType) {
             this.generateUnitObject(this.getPlayer(GameApi.GameApiEnum.PlayerType.Player), unitName, unitType, count)
         } else {
             this.generateUnitObject(this.getPlayer(GameApi.GameApiEnum.PlayerType.Ai), unitName, unitType, count)
         }
+        cb && cb()
     }
 
     getPlayerOfMap() {
@@ -307,5 +352,16 @@ class GameApi {
         var bot = Array.from(bots)[0];
         bot.threatCache = 'attack'
         this.editBotState(GameApi.GameApiEnum.BotStates.Attacking)
+    }
+
+    /**
+     * 修改该玩家所有单位的等级
+     */
+    editPlayerAllUnitsVeteran(playerType, levelType) {
+        var player = this.getPlayer(playerType)
+        var units = player.objectsById.values();
+        Array.from(units).forEach(unit => {
+            unit.veteranTrait && unit.veteranTrait.setVeteranLevel(levelType)
+        })
     }
 }
