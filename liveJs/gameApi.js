@@ -114,6 +114,7 @@ class GameApi {
         this.gameHelper = new this.gameUtils.qWe.GameApi(game, null)
 
         this.initActionApi()
+        this.initMessageApi()
     }
 
 
@@ -124,11 +125,14 @@ class GameApi {
         this.aiActionApi = new ActionApi(botManager.actionFactory, botManager.actionQueue, this.getPlayerName(GameApi.GameApiEnum.PlayerType.Ai), this.game)
     }
 
+    initMessageApi() {
+        this.messageApi = new this.gameUtils.FQe.MessageList(this.game.rules.audioVisual.messageDuration, 6, this.getPlayer(GameApi.GameApiEnum.PlayerType.Player))
+    }
+
     /**
      * 生成作战单位
      */
     generateUnitObject(player, unitName, unitType, count) {
-
 
         var o = () => {
             var self = this
@@ -363,5 +367,9 @@ class GameApi {
         Array.from(units).forEach(unit => {
             unit.veteranTrait && unit.veteranTrait.setVeteranLevel(levelType)
         })
+    }
+
+    addSystemMessage(message, color, durationSeconds) {
+        this.messageApi.addSystemMessage(message, color, durationSeconds)
     }
 }

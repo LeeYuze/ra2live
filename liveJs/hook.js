@@ -12,13 +12,14 @@ const HookCore = function (api) {
     // 部署成功后才可以执行召唤
     setInterval(() => {
         // // 向玩家发射核弹
-        // gameApi.activateSuperWeaponToUnitsByPlayer(GameApi.GameApiEnum.PlayerType.Player, GameApi.GameApiEnum.SuperWeaponType.MultiMissile)
+        // gameApi.activateSuperWeaponToUnitsByPlayer(GameApi.GameApiEnum.PlayerType.Player, GameApi.GameApiEnum.SuperWeaponType.LightningStorm)
 
         // // 给AI生成
         // gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Ai, "APOC", GameApi.GameApiEnum.ObjectType.Vehicle, 1, function () {
         //     // AI强制攻击
         //     gameApi.forceAttackBot()
         // })
+        gameApi.addSystemMessage("123", "grey", 1)
     }, 2000)
 
 
