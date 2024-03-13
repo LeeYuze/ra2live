@@ -299,7 +299,7 @@ class GameApi {
     /**
      * 基地车自动部署
      */
-    baseDeploySelected(playerType, callback) {
+    baseDeploySelected(playerType) {
         var playName = this.getPlayerName(playerType)
         var unitsIds = this.gameHelper.getVisibleUnits(playName, "self");
         unitsIds.length && this.playerActionApi.orderUnits([unitsIds[0]], GameApi.GameApiEnum.OrderType.DeploySelected);
@@ -308,24 +308,30 @@ class GameApi {
     /**
      * 发射超级武器
      */
-    activateSuperWeaponToUnitsByPlayer(playerType, superWeaponType) {
+    activateSuperWeaponToUnitsByPlayer(playerType, superWeaponType, count) {
+        count = count || 1
+
         var player = this.getPlayer(playerType)
         var playerName = this.getPlayerName(playerType)
-        var unitsIds = this.gameHelper.getVisibleUnits(playerName, "self");
 
-        // 随机获取一个单位
-        var unitId = Utils.getRandomByArray(unitsIds)
-        var unitData = this.gameHelper.getUnitData(unitId)
+        for (let i = 0; i < count; i++) {
+            var unitsIds = this.gameHelper.getVisibleUnits(playerName, "self");
 
-        var unitDataTile = unitData.tile
+            // 随机获取一个单位
+            var unitId = Utils.getRandomByArray(unitsIds)
+            var unitData = this.gameHelper.getUnitData(unitId)
 
-        var superWeaponRules = {
-            type: superWeaponType, // 假设要使用的是美国空投类型的超级武器
-            weaponType: "NukeCarrier" // 核弹需要这个代码
-        };
+            var unitDataTile = unitData.tile
 
-        // 发射
-        this.game.traits.get(this.gameUtils.IIe.SuperWeaponsTrait).activateEffect(superWeaponRules, player, this.game, unitDataTile, null)
+            var superWeaponRules = {
+                type: superWeaponType, // 假设要使用的是美国空投类型的超级武器
+                weaponType: "NukeCarrier" // 核弹需要这个代码
+            };
+
+            // 发射
+            this.game.traits.get(this.gameUtils.IIe.SuperWeaponsTrait).activateEffect(superWeaponRules, player, this.game, unitDataTile, null)
+        }
+
     }
 
     /**
