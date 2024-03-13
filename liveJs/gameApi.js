@@ -114,7 +114,8 @@ class GameApi {
         this.gameHelper = new this.gameUtils.qWe.GameApi(game, null)
 
         this.initActionApi()
-        this.initMessageApi()
+        // this.initMessageApi()
+        this.messageApi = this.gameUtils.hookMessageList
     }
 
 
@@ -123,10 +124,6 @@ class GameApi {
 
         this.playerActionApi = new ActionApi(botManager.actionFactory, botManager.actionQueue, this.getPlayerName(GameApi.GameApiEnum.PlayerType.Player), this.game)
         this.aiActionApi = new ActionApi(botManager.actionFactory, botManager.actionQueue, this.getPlayerName(GameApi.GameApiEnum.PlayerType.Ai), this.game)
-    }
-
-    initMessageApi() {
-        this.messageApi = new this.gameUtils.FQe.MessageList(this.game.rules.audioVisual.messageDuration, 6, this.getPlayer(GameApi.GameApiEnum.PlayerType.Player))
     }
 
     /**
@@ -369,7 +366,7 @@ class GameApi {
         })
     }
 
-    addSystemMessage(message, color, durationSeconds) {
+    sendSystemMessage(message, color, durationSeconds) {
         this.messageApi.addSystemMessage(message, color, durationSeconds)
     }
 }

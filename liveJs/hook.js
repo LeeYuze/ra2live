@@ -19,21 +19,22 @@ const HookCore = function (api) {
         //     // AI强制攻击
         //     gameApi.forceAttackBot()
         // })
-        gameApi.addSystemMessage("123", "grey", 1)
+        // gameApi.sendSystemMessage("你好你好你好你好哦", "#e6de0d", 1)
     }, 2000)
 
 
     // gameApi.editPlayerAllUnitsVeteran(GameApi.GameApiEnum.PlayerType.Player,GameApi.GameApiEnum.VeteranLevel.Elite)
     // gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, "ZEP", GameApi.GameApiEnum.ObjectType.Aircraft, 1)
     //
-    // setTimeout(() => {
-    //     // gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, "APOC", GameApi.GameApiEnum.ObjectType.Vehicle, 188)
-    //     // gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, "ZEP", GameApi.GameApiEnum.ObjectType.Vehicle, 1)
-    //     gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, "ZEP", GameApi.GameApiEnum.ObjectType.Vehicle, 5)
-    //     gameApi.editPlayerAllUnitsVeteran(GameApi.GameApiEnum.PlayerType.Player,GameApi.GameApiEnum.VeteranLevel.Elite)
-    //     gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, "ZEP", GameApi.GameApiEnum.ObjectType.Vehicle, 5)
-    //
-    // }, 5000)
+    setTimeout(() => {
+        // gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, "APOC", GameApi.GameApiEnum.ObjectType.Vehicle, 188)
+        // gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, "ZEP", GameApi.GameApiEnum.ObjectType.Vehicle, 1)
+        // gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, "ZEP", GameApi.GameApiEnum.ObjectType.Vehicle, 5)
+        // gameApi.editPlayerAllUnitsVeteran(GameApi.GameApiEnum.PlayerType.Player,GameApi.GameApiEnum.VeteranLevel.Elite)
+        // gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, "ZEP", GameApi.GameApiEnum.ObjectType.Vehicle, 5)
+
+        // gameApi.activateSuperWeaponToUnitsByPlayer(GameApi.GameApiEnum.PlayerType.Player, GameApi.GameApiEnum.SuperWeaponType.LightningStorm)
+    }, 5000)
 
 
     setTimeout(() => {
