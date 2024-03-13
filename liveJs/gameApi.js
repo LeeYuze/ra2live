@@ -102,6 +102,10 @@ class GameApi {
             None: 0,
             Veteran: 1,
             Elite: 2
+        },
+        sellBuildType: {
+            All: 0,
+            Random: 1,
         }
     }
 
@@ -374,5 +378,24 @@ class GameApi {
 
     sendSystemMessage(message, color, durationSeconds) {
         this.messageApi.addSystemMessage(message, color, durationSeconds)
+    }
+
+    sellBuild(playerType, sellBuildType) {
+        var player = this.getPlayer(playerType)
+        var buildings = Array.from(player.buildings.values())
+
+        var actionApi = GameApi.GameApiEnum.PlayerType.Player === sellBuildType ? this.playerActionApi : this.aiActionApi
+
+        switch (sellBuildType) {
+            case GameApi.GameApiEnum.sellBuildType.All:
+                buildings.forEach(build => {
+                    actionApi.sellBuilding(build.id)
+                })
+                break
+            case GameApi.GameApiEnum.sellBuildType.Random:
+                var build = Utils.getRandomByArray(buildings)
+                actionApi.sellBuilding(build.id)
+                break
+        }
     }
 }
