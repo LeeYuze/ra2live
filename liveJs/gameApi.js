@@ -103,14 +103,22 @@ class GameApi {
             Veteran: 1,
             Elite: 2
         },
-        sellBuildType: {
+        SellBuildType: {
             All: 0,
             Random: 1,
+        },
+        MessageType:{
+            Success: "#67C23A",
+            Warning:"#E6A23C",
+            Danger:"#F56C6C",
+            Info:"#909399"
         }
     }
 
-    constructor(game, gameUtils) {
+    constructor(game, gameUtils, config) {
         this.game = game
+
+        this.config = config
 
         //qWe - 获取当前游戏的单位情况
         this.gameUtils = gameUtils
@@ -134,7 +142,6 @@ class GameApi {
      * 生成作战单位
      */
     generateUnitObject(player, unitName, unitType, count) {
-
         var o = () => {
             var self = this
             var t = this.game;
@@ -253,6 +260,8 @@ class GameApi {
     }
 
     generateUnitObjectByEnum(playerType, unitName, unitType, count, cb) {
+        count = count >= this.config.generateLimitCount ? this.config.generateLimitCount : count
+
         if (GameApi.GameApiEnum.PlayerType.Player === playerType) {
             this.generateUnitObject(this.getPlayer(GameApi.GameApiEnum.PlayerType.Player), unitName, unitType, count)
         } else {
@@ -380,6 +389,7 @@ class GameApi {
         this.messageApi.addSystemMessage(message, color, durationSeconds)
     }
 
+
     sellBuild(playerType, sellBuildType) {
         var player = this.getPlayer(playerType)
         var buildings = Array.from(player.buildings.values())
@@ -387,12 +397,12 @@ class GameApi {
         var actionApi = GameApi.GameApiEnum.PlayerType.Player === sellBuildType ? this.playerActionApi : this.aiActionApi
 
         switch (sellBuildType) {
-            case GameApi.GameApiEnum.sellBuildType.All:
+            case GameApi.GameApiEnum.SellBuildType.All:
                 buildings.forEach(build => {
                     actionApi.sellBuilding(build.id)
                 })
                 break
-            case GameApi.GameApiEnum.sellBuildType.Random:
+            case GameApi.GameApiEnum.SellBuildType.Random:
                 var build = Utils.getRandomByArray(buildings)
                 actionApi.sellBuilding(build.id)
                 break
