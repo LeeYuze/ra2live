@@ -107,11 +107,11 @@ class GameApi {
             All: 0,
             Random: 1,
         },
-        MessageType:{
+        MessageType: {
             Success: "#67C23A",
-            Warning:"#E6A23C",
-            Danger:"#F56C6C",
-            Info:"#909399"
+            Warning: "#E6A23C",
+            Danger: "#F56C6C",
+            Info: "#909399"
         }
     }
 
@@ -138,135 +138,75 @@ class GameApi {
         this.aiActionApi = new ActionApi(botManager.actionFactory, botManager.actionQueue, this.getPlayerName(GameApi.GameApiEnum.PlayerType.Ai), this.game)
     }
 
-    /**
-     * 生成作战单位
-     */
-    generateUnitObject(player, unitName, unitType, count) {
-        var o = () => {
-            var self = this
-            var t = this.game;
-            // 玩家信息
-            var n = player;
 
-            // 修改一下，随机选一个基地生成
-            var a = t.map.startingLocations[n.startLocation]
-            console.log(a)
-
-            // 基地车NACNST GACNST
-            const playerObjects = player.objectsById.values()
-
-            Array.from(playerObjects).forEach(unit => {
-                if (unit.name === 'NACNST' || unit.name === 'GACNST') {
-                    a = unit.position.tile
-                    a.x = a.rx
-                    a.y = a.ry
-                }
-            })
-
-
-            // var r = [].concat(this.gameUtils.$V(this.rules.infantryRules.values()), this.gameUtils.$V(this.rules.vehicleRules.values()))
-
-            // 获取这个国家可以制造的兵种
-            // var o = this.gameUtils.GVe.StartingUnitsGenerator.generate(this.gameOpts.unitCount, this.gameUtils.$V(this.rules.vehicleRules.keys()), r, n.country);
-
-            const mCardinalTileFinder = () => {
-
-                var xOffset = Utils.getRandomNumber(-10, 10)
-                var yOffset = Utils.getRandomNumber(-10, 10)
-
-                // 该玩家在本地图的坐标
-                var l = t.map.tiles.getByMapCoords(a.x + xOffset, a.y + yOffset);
-
-                return new this.gameUtils._Ue.CardinalTileFinder(
-                    t.map.tiles,
-                    t.map.mapBounds,
-                    l,
-                    2,
-                    2,
-                    function (e) {
-                        return !t.map.getGroundObjectsOnTile(e).find(function (e) {
-                            return !(e.isSmudge() || (e.isOverlay() && e.isTiberium()));
-                        }) && t.map.terrain.getPassableSpeed(e, self.gameUtils.zEe.SpeedType.Foot, false) > 0;
-                    }
-                )
+    generateUnitObject(player, ownerPlayer, unitName, unitType, count) {
+        var self = this
+        var t = this.game;
+        // 玩家信息
+        var n = player;
+        var a = t.map.startingLocations[n.startLocation]
+        // 基地车NACNST GACNST
+        const playerObjects = n.objectsById.values()
+        Array.from(playerObjects).forEach(unit => {
+            if (unit.name === 'NACNST' || unit.name === 'GACNST') {
+                a = unit.position.tile
+                a.x = a.rx
+                a.y = a.ry
             }
+        })
 
+        // 该玩家在本地图的坐标
+        var l = t.map.tiles.getByMapCoords(a.x, a.y);
+        // 创建单位生成器
+        var c, h, f, p, d = [], y = !1,
+            m = new self.gameUtils._Ue.CardinalTileFinder(t.map.tiles, t.map.mapBounds, l, 4, 4, function (e) {
+                // 判断地块是否合适生成单位的条件
+                return !t.map.getGroundObjectsOnTile(e).find(function (e) {
+                    return !(e.isSmudge() || e.isOverlay() && e.isTiberium());
+                }) && 0 < t.map.terrain.getPassableSpeed(e, self.gameUtils.zEe.SpeedType.Foot, !1);
+            }),
+            v = new Map, b = 0;
 
-            // 构建地图筛选器
-            var p,
-                d = [],
-                y = false,
-                m = mCardinalTileFinder(),
-                v = new Map(),
-                b = 0;
-
-            // 测试召唤
-            for (var index = 0; index < count; index++) {
-                var s = unitName, u = unitType;
-
-                // 查找可以用地图-开始
-                var c, h;
+        try {
+            var s = unitName, u = unitType;
+            for (var S = count; 0 < S;) {
                 var T = void 0;
                 if (y || ((T = m.getNextTile()) ? d.push(T) : y = !0), y && d.length) {
                     c = d[b];
                     var x = v.get(c);
-                    x || (x = new this.gameUtils._Ue.CardinalTileFinder(t.map.tiles, t.map.mapBounds, c, 1, 0, function (e) {
+                    x || (x = new self.gameUtils._Ue.CardinalTileFinder(t.map.tiles, t.map.mapBounds, c, 1, 0, function (e) {
                         return !t.map.getGroundObjectsOnTile(e).find(function (e) {
                             return !(e.isSmudge() || e.isOverlay() && e.isTiberium())
                         }) && 0 < t.map.terrain.getPassableSpeed(e, self.gameUtils.zEe.SpeedType.Foot, !1)
                     }), v.set(c, x)), b = (b + 1) % d.length, T = x.getNextTile()
                 }
-                // 查找可以用地图-结束
-
-                const generateCore = () => {
-                    if (h = t.rules.getObject(s, u), u === this.gameUtils.zxe.ObjectType.Vehicle) {
-                        c = t.createUnitForPlayer(h, n);
-                        t.applyInitialVeteran(c, n);
-                        t.spawnObject(c, T);
-                    } else {
-                        if (u !== this.gameUtils.zxe.ObjectType.Infantry) {
-                            throw new Error("Should not reach this line");
+                if (T) if (h = t.rules.getObject(s, u), u === self.gameUtils.zxe.ObjectType.Vehicle) c = t.createUnitForPlayer(h, ownerPlayer), t.applyInitialVeteran(c, n), t.spawnObject(c, T), S--; else {
+                    if (u !== self.gameUtils.zxe.ObjectType.Infantry) throw new Error("Should not reach this line");
+                    var E, O = self.gameUtils.JV(self.gameUtils.vLe.Infantry.SUB_CELLS.slice(0, S));
+                    try {
+                        for (O.s(); !(E = O.n()).done;) {
+                            f = E.value;
+                            var P = t.createUnitForPlayer(h, ownerPlayer);
+                            P.position.subCell = f, t.applyInitialVeteran(P, n), t.spawnObject(P, T), S--
                         }
-                        var E, O = this.gameUtils.JV(this.gameUtils.vLe.Infantry.SUB_CELLS.slice(0, 1));
-                        try {
-                            for (O.s(); !(E = O.n()).done;) {
-                                var f = E.value;
-                                var P = t.createUnitForPlayer(h, n);
-                                P.position.subCell = f;
-                                t.applyInitialVeteran(P, n);
-                                t.spawnObject(P, T);
-                            }
-                        } catch (e) {
-                            O.e(e);
-                        } finally {
-                            O.f();
-                        }
+                    } catch (e) {
+                        O.e(e)
+                    } finally {
+                        O.f()
                     }
-                }
-
-                // if (T) {
-                //     generateCore()
-                // } else {
-                //     m = mCardinalTileFinder()
-                //     generateCore()
-                // }
-
-                generateCore()
+                } else S--
             }
-
+        } catch (e) {
+            console.log(e)
         }
 
-        o()
     }
 
-    generateUnitObjectByEnum(playerType, unitName, unitType, count, cb) {
+    generateUnitObjectByEnum(playerType, ownerPlayer, unitName, unitType, count, cb) {
         count = count >= this.config.generateLimitCount ? this.config.generateLimitCount : count
 
-        if (GameApi.GameApiEnum.PlayerType.Player === playerType) {
-            this.generateUnitObject(this.getPlayer(GameApi.GameApiEnum.PlayerType.Player), unitName, unitType, count)
-        } else {
-            this.generateUnitObject(this.getPlayer(GameApi.GameApiEnum.PlayerType.Ai), unitName, unitType, count)
-        }
+        this.generateUnitObject(this.getPlayer(playerType), this.getPlayer(ownerPlayer), unitName, unitType, count)
+
         cb && cb()
     }
 

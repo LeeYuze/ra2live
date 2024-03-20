@@ -1,116 +1,70 @@
-var ws;
-var url = 'ws://localhost:8181';
+let handles = {}
+let gameApi
+runWsConnect(handles)
 
-function connect() {
-    ws = new WebSocket(url);
-
-    ws.onopen = function() {
-        console.log('WebSocket Connected');
-        // 启动心跳包定时器，每秒发送一次心跳包
-        startHeartbeat();
-    };
-
-    ws.onclose = function() {
-        console.log('WebSocket Closed');
-        // 停止心跳包定时器
-        clearInterval(heartbeatInterval);
-        // 断线后重新连接
-        setTimeout(function() {
-            connect();
-        }, 1000); // 重连间隔，单位：毫秒
-    };
-
-    ws.onerror = function(error) {
-        console.error('WebSocket Error:', error);
-        // 出错后也尝试重新连接
-        ws.close();
-    };
+const getControls = async () => {
+    let resp = await fetch("http://localhost:8080/controls")
+    resp = await resp.json()
+    return resp.res
 }
 
-// 心跳包定时器
-let heartbeatInterval;
-
-// 启动心跳包定时器函数
-function startHeartbeat() {
-    heartbeatInterval = setInterval(function() {
-        // 每秒向服务器发送一次心跳包
-        sendHeartbeat();
-    }, 1000); // 每秒发送一次心跳包
-}
-
-// 向服务器发送心跳包函数
-function sendHeartbeat() {
-    // 如果 WebSocket 连接已建立，则发送心跳包
-    if (ws.readyState === WebSocket.OPEN) {
-        ws.send('heartbeat');
+const handleAction = (control, action, options) => {
+    try {
+        const {gameType} = action
+        const {giftCount, user, gift} = options
+        switch (gameType) {
+            case 0:
+                // 召唤的单位
+                // console.log(action)
+                const {parameter} = action
+                const {count, ownerPlayer, unitType, unitCode, targetPlayer} = parameter
+                if (gameApi) {
+                    gameApi.generateUnitObjectByEnum(targetPlayer, ownerPlayer, unitCode, unitType, count * giftCount)
+                    gameApi.sendSystemMessage(`${user.nickName} 赠送 ${gift.name} 触发 [${control.name} * ${giftCount}]`, GameApi.GameApiEnum.MessageType.Success, 10)
+                    gameApi.forceAttackBot()
+                }
+                break;
+        }
+    } catch (e) {
+        gameApi = null
     }
 }
 
-connect()
+// 送礼物
+handles.WebcastGiftMessage = async (msg) => {
+    const giftName = msg.gift.name
+    const giftCount = Number(msg.repeatCount)
+    const user = msg.user
+
+    // 找到配对的规则
+    const controls = await getControls()
+    const matchControls = controls.filter((item) => item.isGift && item.trigger.includes(giftName))
+
+    console.log(msg.gift, giftCount)
+    // 匹配到的游戏规则
+    matchControls.forEach((control) => {
+        // 匹配到规则的所有操作
+        control.actions.forEach((action) => {
+            handleAction(control, action, {gift: msg.gift, user: msg.user, giftCount})
+        })
+    })
+}
 
 const HookCore = function (api) {
 
-    const gameApi = new GameApi(this, api, {
+    gameApi = new GameApi(this, api, {
         generateLimitCount: 2000
     })
 
+    // 玩家自动部署基地车
     gameApi.baseDeploySelected(GameApi.GameApiEnum.PlayerType.Player)
 
+    setTimeout(() => {
+        gameApi.editGameCredits(GameApi.GameApiEnum.PlayerType.Player, 999999999)
+        gameApi.editGameCredits(GameApi.GameApiEnum.PlayerType.Ai, 999999999)
+    }, 3000)
+}
 
-    ws.onmessage = function(event) {
-        console.log('Received message:', event.data);
-
-        // 解析收到的消息
-        const message = JSON.parse(event.data);
-
-        // 根据消息内容调用相应的 GameApi 方法
-        switch (message.action) {
-            case 'generateUnit':
-                gameApi.generateUnitObjectByEnum(message.playerType, message.unitName, message.unitType, message.count);
-                break;
-            // 可以添加其他指令的处理逻辑...
-            default:
-                console.error('Invalid action:', message.action);
-        }
-    };
-
-    // 玩家自动部署基地车
-
-
-
-    //
-    //
-    // // // 部署成功后才可以执行召唤
-    // // setInterval(() => {
-    // //     // // 向玩家发射核弹
-    // //     // gameApi.activateSuperWeaponToUnitsByPlayer(GameApi.GameApiEnum.PlayerType.Player, GameApi.GameApiEnum.SuperWeaponType.LightningStorm)
-    // //
-    // //     // // 给AI生成
-    // //     // gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Ai, "APOC", GameApi.GameApiEnum.ObjectType.Vehicle, 1, function () {
-    // //     //     // AI强制攻击
-    // //     //     gameApi.forceAttackBot()
-    // //     // })
-    // //     // gameApi.sendSystemMessage("你好你好你好你好哦", "#e6de0d", 1)
-    // // }, 2000)
-    //
-    //
-    // // gameApi.editPlayerAllUnitsVeteran(GameApi.GameApiEnum.PlayerType.Player,GameApi.GameApiEnum.VeteranLevel.Elite)
-    // // gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, "ZEP", GameApi.GameApiEnum.ObjectType.Aircraft, 1)
-    // //
-    // setTimeout(() => {
-    //     gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, "APOC", GameApi.GameApiEnum.ObjectType.Vehicle, 3000)
-    //     // gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, "ZEP", GameApi.GameApiEnum.ObjectType.Vehicle, 1)
-    //     // gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, "ZEP", GameApi.GameApiEnum.ObjectType.Vehicle, 5)
-    //     // gameApi.editPlayerAllUnitsVeteran(GameApi.GameApiEnum.PlayerType.Player,GameApi.GameApiEnum.VeteranLevel.Elite)
-    //     // gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, "ZEP", GameApi.GameApiEnum.ObjectType.Vehicle, 5)
-    //
-    //     // gameApi.activateSuperWeaponToUnitsByPlayer(GameApi.GameApiEnum.PlayerType.Player, GameApi.GameApiEnum.SuperWeaponType.LightningStorm)
-    //     // gameApi.sellBuild(GameApi.GameApiEnum.PlayerType.Ai, GameApi.GameApiEnum.sellBuildType.Random)
-    // }, 3000)
-    //
-    // //
-    // setTimeout(() => {
-    //     gameApi.editGameCredits(GameApi.GameApiEnum.PlayerType.Player, 999999999)
-    //     gameApi.editGameCredits(GameApi.GameApiEnum.PlayerType.Ai, 999999999)
-    // }, 3000)
+const HookCoreEnd = function () {
+    console.log("end")
 }
