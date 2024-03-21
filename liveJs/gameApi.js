@@ -222,12 +222,12 @@ class GameApi {
                                     O.f();
                                 }
                             }
-                            count -= i; // 更新剩余的生成请求数量
-                            productionRateLimit++
                         }
+                        productionRateLimit++
                     }
                     await wait(1)
                 }
+                count -= batchCountActual; // 更新剩余的生成请求数量
             }
         } catch (e) {
             console.log(e)
@@ -366,8 +366,7 @@ class GameApi {
     sellBuild(playerType, sellBuildType) {
         var player = this.getPlayer(playerType)
         var buildings = Array.from(player.buildings.values())
-
-        var actionApi = GameApi.GameApiEnum.PlayerType.Player === sellBuildType ? this.playerActionApi : this.aiActionApi
+        var actionApi = GameApi.GameApiEnum.PlayerType.Player === playerType ? this.playerActionApi : this.aiActionApi
 
         switch (sellBuildType) {
             case GameApi.GameApiEnum.SellBuildType.All:
