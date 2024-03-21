@@ -139,7 +139,13 @@ class GameApi {
     }
 
 
-    generateUnitObject(player, ownerPlayer, unitName, unitType, count) {
+    async generateUnitObject(player, ownerPlayer, unitName, unitType, count) {
+        const wait = (ms) => {
+            return new Promise(resolve => {
+                setTimeout(resolve, ms);
+            });
+        }
+
         var self = this
         var t = this.game;
         // 玩家信息
@@ -167,34 +173,61 @@ class GameApi {
             }),
             v = new Map, b = 0;
 
+        // 设置生产速度限制
+        var productionRateLimit = 2; // 设置为每帧生产一个单位
+
         try {
             var s = unitName, u = unitType;
-            for (var S = count; 0 < S;) {
-                var T = void 0;
-                if (y || ((T = m.getNextTile()) ? d.push(T) : y = !0), y && d.length) {
-                    c = d[b];
-                    var x = v.get(c);
-                    x || (x = new self.gameUtils._Ue.CardinalTileFinder(t.map.tiles, t.map.mapBounds, c, 1, 0, function (e) {
-                        return !t.map.getGroundObjectsOnTile(e).find(function (e) {
-                            return !(e.isSmudge() || e.isOverlay() && e.isTiberium())
-                        }) && 0 < t.map.terrain.getPassableSpeed(e, self.gameUtils.zEe.SpeedType.Foot, !1)
-                    }), v.set(c, x)), b = (b + 1) % d.length, T = x.getNextTile()
-                }
-                if (T) if (h = t.rules.getObject(s, u), u === self.gameUtils.zxe.ObjectType.Vehicle) c = t.createUnitForPlayer(h, ownerPlayer), t.applyInitialVeteran(c, n), t.spawnObject(c, T), S--; else {
-                    if (u !== self.gameUtils.zxe.ObjectType.Infantry) throw new Error("Should not reach this line");
-                    var E, O = self.gameUtils.JV(self.gameUtils.vLe.Infantry.SUB_CELLS.slice(0, S));
-                    try {
-                        for (O.s(); !(E = O.n()).done;) {
-                            f = E.value;
-                            var P = t.createUnitForPlayer(h, ownerPlayer);
-                            P.position.subCell = f, t.applyInitialVeteran(P, n), t.spawnObject(P, T), S--
+            // 批量处理单位生成请求
+            var batchCount = 10; // 设置每次处理的单位生成请求数量
+            while (count > 0) {
+                var batchCountActual = Math.min(count, batchCount); // 实际处理的单位生成请求数量
+
+                for (let i = 0; i < batchCountActual; i++) {
+                    // 生成单位
+                    if (productionRateLimit > 0) {
+                        // 生产速度限制处理
+                        productionRateLimit--;
+                        var T = void 0;
+                        if (y || ((T = m.getNextTile()) ? d.push(T) : y = !0), y && d.length) {
+                            c = d[b];
+                            var x = v.get(c);
+                            x || (x = new self.gameUtils._Ue.CardinalTileFinder(t.map.tiles, t.map.mapBounds, c, 1, 0, function (e) {
+                                return !t.map.getGroundObjectsOnTile(e).find(function (e) {
+                                    return !(e.isSmudge() || e.isOverlay() && e.isTiberium())
+                                }) && 0 < t.map.terrain.getPassableSpeed(e, self.gameUtils.zEe.SpeedType.Foot, !1)
+                            }), v.set(c, x)), b = (b + 1) % d.length, T = x.getNextTile()
                         }
-                    } catch (e) {
-                        O.e(e)
-                    } finally {
-                        O.f()
+                        if (T) {
+                            if (h = t.rules.getObject(s, u), u === self.gameUtils.zxe.ObjectType.Vehicle) {
+                                c = t.createUnitForPlayer(h, ownerPlayer);
+                                t.applyInitialVeteran(c, n);
+                                t.spawnObject(c, T);
+                            } else {
+                                if (u !== self.gameUtils.zxe.ObjectType.Infantry) {
+                                    throw new Error("Should not reach this line");
+                                }
+                                var E, O = self.gameUtils.JV(self.gameUtils.vLe.Infantry.SUB_CELLS.slice(0, batchCountActual));
+                                try {
+                                    for (O.s(); !(E = O.n()).done;) {
+                                        f = E.value;
+                                        var P = t.createUnitForPlayer(h, ownerPlayer);
+                                        P.position.subCell = f;
+                                        t.applyInitialVeteran(P, n);
+                                        t.spawnObject(P, T);
+                                    }
+                                } catch (e) {
+                                    O.e(e);
+                                } finally {
+                                    O.f();
+                                }
+                            }
+                            count -= i; // 更新剩余的生成请求数量
+                            productionRateLimit++
+                        }
                     }
-                } else S--
+                    await wait(1)
+                }
             }
         } catch (e) {
             console.log(e)
@@ -307,7 +340,7 @@ class GameApi {
     /**
      * 机器人强制攻击
      */
-    forceAttackBot() {
+    forceAttackPlayer() {
         var bots = this.game.botManager.bots.values();
         var bot = Array.from(bots)[0];
         bot.threatCache = 'attack'

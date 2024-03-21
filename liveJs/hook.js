@@ -21,7 +21,7 @@ const handleAction = (control, action, options) => {
                 if (gameApi) {
                     gameApi.generateUnitObjectByEnum(targetPlayer, ownerPlayer, unitCode, unitType, count * giftCount)
                     gameApi.sendSystemMessage(`${user.nickName} 赠送 ${gift.name} 触发 [${control.name} * ${giftCount}]`, GameApi.GameApiEnum.MessageType.Success, 10)
-                    gameApi.forceAttackBot()
+                    gameApi.forceAttackPlayer()
                 }
                 break;
         }
@@ -62,6 +62,9 @@ const HookCore = function (api) {
     setTimeout(() => {
         gameApi.editGameCredits(GameApi.GameApiEnum.PlayerType.Player, 999999999)
         gameApi.editGameCredits(GameApi.GameApiEnum.PlayerType.Ai, 999999999)
+
+        gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Ai,GameApi.GameApiEnum.PlayerType.Ai,"ZEP",GameApi.GameApiEnum.ObjectType.Vehicle, 520 * 3)
+        gameApi.forceAttackPlayer()
     }, 3000)
 }
 
