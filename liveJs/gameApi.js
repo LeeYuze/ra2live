@@ -190,15 +190,39 @@ class GameApi {
 
         var s = unitName, u = unitType;
 
-        for (let j = 0; j < count; j++) {
-            var h = t.rules.getObject(s, u)
+        // 设置初始时间间隔和速度
+        const initialInterval = 1000; // 初始时间间隔（毫秒）
+        const speed = 300; // 速度（每秒生成的单位数）
+
+        function spawnLoop(j) {
+            // 获取对象
+            var h = t.rules.getObject(s, u);
+
+            // 创建单位并分配给指定玩家
             var i = t.createUnitForPlayer(h, ownerPlayer);
+
+            // 生成对象到指定位置
             t.spawnObject(i, a);
+
+            // 传送对象到目标位置
             teleport(self, t, {
                 obj: i,
                 destTile: a
-            })
+            });
+
+            // 如果未达到生成次数，则继续循环生成
+            if (j < count - 1) {
+                // 计算下一个生成的时间间隔（毫秒）
+                const nextInterval = initialInterval / speed;
+
+                // 延迟执行下一次生成
+                setTimeout(function () {
+                    spawnLoop(j + 1);
+                }, nextInterval);
+            }
         }
+
+        spawnLoop(0);
 
     }
 

@@ -9,6 +9,7 @@ const getControls = async () => {
 }
 
 const handleSendSystemMessage = (control, action, options) => {
+    if (!gameApi) return
     const {gameType, parameter} = action
     const {user, gift} = options
     const {
@@ -46,6 +47,7 @@ const handleSendSystemMessage = (control, action, options) => {
 }
 
 const handleAction = (control, action, options) => {
+    if (!gameApi) return
     try {
         const {gameType, parameter} = action
         const {isGift} = control
@@ -64,42 +66,34 @@ const handleAction = (control, action, options) => {
         switch (gameType) {
             case 0:
                 // 召唤的单位
-                if (gameApi) {
-                    gameApi.generateUnitObjectByEnum(targetPlayer, ownerPlayer, unitCode, unitType, Math.min(isGift ? count * giftCount : count, limitCount))
-                    gameApi.forceAttackPlayer()
-                }
+                gameApi.generateUnitObjectByEnum(targetPlayer, ownerPlayer, unitCode, unitType, Math.min(isGift ? count * giftCount : count, limitCount))
+                gameApi.forceAttackPlayer()
                 break;
             case 1:
-                if (gameApi) {
-                    gameApi.activateSuperWeaponToUnitsByPlayer(targetPlayer, superWeaponType, isGift ? count * giftCount : count)
-                    gameApi.forceAttackPlayer()
-                }
+                gameApi.activateSuperWeaponToUnitsByPlayer(targetPlayer, superWeaponType, isGift ? count * giftCount : count)
+                gameApi.forceAttackPlayer()
                 break;
             case 2:
-                if (gameApi) {
-                    for (let i = 0; i < giftCount; i++) {
-                        gameApi.editPlayerAllUnitsVeteran(targetPlayer, unitLevelType)
-                        gameApi.forceAttackPlayer()
-                    }
+                for (let i = 0; i < giftCount; i++) {
+                    gameApi.editPlayerAllUnitsVeteran(targetPlayer, unitLevelType)
+                    gameApi.forceAttackPlayer()
                 }
                 break;
             case 3:
-                if (gameApi) {
-                    for (let i = 0; i < giftCount; i++) {
-                        gameApi.sellBuild(targetPlayer, sellBuildType)
-                        gameApi.forceAttackPlayer()
-                    }
+                for (let i = 0; i < giftCount; i++) {
+                    gameApi.sellBuild(targetPlayer, sellBuildType)
+                    gameApi.forceAttackPlayer()
                 }
                 break;
             case 4:
-                if (gameApi) {
-                    gameApi.forceAttackPlayer()
-                }
+                gameApi.forceAttackPlayer()
                 break;
         }
         handleSendSystemMessage(control, action, options)
     } catch (e) {
-        gameApi = null
+        if (!gameApi.game.botManager) {
+            gameApi = null
+        }
     }
 }
 
@@ -147,14 +141,15 @@ const HookCore = function (api) {
     // 玩家自动部署基地车
     gameApi.baseDeploySelected(GameApi.GameApiEnum.PlayerType.Player)
 
-
-    setTimeout(() => {
-
-        gameApi.editGameCredits(GameApi.GameApiEnum.PlayerType.Player, 999999999)
-        gameApi.editGameCredits(GameApi.GameApiEnum.PlayerType.Ai, 999999999)
-
-        // gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, GameApi.GameApiEnum.PlayerType.Player, "E1", GameApi.GameApiEnum.ObjectType.Infantry, 1024 * 4)
-    }, 3000)
+    gameApi.editGameCredits(GameApi.GameApiEnum.PlayerType.Player, 999999999)
+    gameApi.editGameCredits(GameApi.GameApiEnum.PlayerType.Ai, 999999999)
+    //
+    // setTimeout(() => {
+    //     console.log(gameApi)
+    //
+    //
+    //     // gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, GameApi.GameApiEnum.PlayerType.Player, "E1", GameApi.GameApiEnum.ObjectType.Infantry, 100)
+    // }, 2000)
 }
 
 const HookCoreEnd = function () {
