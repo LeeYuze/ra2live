@@ -138,8 +138,71 @@ class GameApi {
         this.aiActionApi = new ActionApi(botManager.actionFactory, botManager.actionQueue, this.getPlayerName(GameApi.GameApiEnum.PlayerType.Ai), this.game)
     }
 
+    generateUnitObject(player, ownerPlayer, unitName, unitType, count) {
+        var teleport = function (self, e, r) {
+            var i = r.obj, s = r.destTile, l;
+            if (i.isSpawned) {
+                var u, c = !1, f = s ? e.map.tileOccupation.getBridgeOnTile(s) : void 0,
+                    h = e.map.getGroundObjectsOnTile(s), p = h.find(function (e) {
+                        return e.isBuilding()
+                    });
+                var o = h.some(function (t) {
+                        return e.rules.general.padAircraft.includes(t.name)
+                    }),
+                    a = e.rules.general.padAircraft.includes(i.name) && !(null == p || !p.helipadTrait) && !(null === (u = p.dockTrait) || void 0 === u || !u.getAllDockTiles().includes(s)) && p.owner === i.owner;
+                var d = !1, y = i.rules.speedType;
+                if (i.rules.movementZone === self.gameUtils.lOe.MovementZone.Fly && (y = self.gameUtils.zEe.SpeedType.Wheel), l = e.map.mapBounds.isWithinBounds(s), !(a || e.map.terrain.getPassableSpeed(s, y, !!f) && l)) {
+                    var m = !1;
+                    if (!o && (0 < e.map.terrain.getPassableSpeed(s, y, !!f, void 0, !0) || !l)) {
+                        p && (c = !0);
+                        var v = new self.gameUtils.qAe.RadialTileFinder(e.map.tiles, e.map.mapBounds, s, {
+                            width: 1,
+                            height: 1
+                        }, 1, 15, function (t) {
+                            return 0 < e.map.terrain.getPassableSpeed(t, y, !!t.onBridgeLandType) && !e.map.terrain.findObstacles({
+                                tile: t,
+                                onBridge: !!t.onBridgeLandType
+                            }, i).length
+                        });
+                        (l = v.getNextTile()) && (s = l, f = e.map.tileOccupation.getBridgeOnTile(s), h = e.map.getGroundObjectsOnTile(s), m = !0)
+                    }
+                    m || (i.moveTrait.teleportUnitToTile(s, f, !0, !1, e), i.warpedOutTrait.setActive(!1, !0, e), e.map.getTileZone(s) === self.gameUtils.FAe.ZoneType.Water && (i.deathType = self.gameUtils.SRe.DeathType.Sink), e.destroyObject(i, {player: t.owner}), d = !0)
+                }
 
-    async generateUnitObject(player, ownerPlayer, unitName, unitType, count) {
+                d || (i.moveTrait.teleportUnitToTile(s, f, !0, !1, e), a && null != p && p.dockTrait && (a = p.dockTrait.getAllDockTiles().indexOf(s), p.dockTrait.undockUnitAt(a), p.dockTrait.dockUnitAt(i, a)), c ? i.warpedOutTrait.setTimed(e.rules.general.chronoDelay, !1, e) : i.warpedOutTrait.setActive(!1, !0, e))
+            }
+        };
+
+        var self = this
+        var t = this.game;
+        // 玩家信息
+        var n = player;
+        var a = t.map.startingLocations[n.startLocation]
+        // 基地车NACNST GACNST
+        const playerObjects = n.objectsById.values()
+        Array.from(playerObjects).forEach(unit => {
+            if (unit.name === 'NACNST' || unit.name === 'GACNST') {
+                a = unit.position.tile
+                a.x = a.rx
+                a.y = a.ry
+            }
+        })
+
+        var s = unitName, u = unitType;
+
+        for (let j = 0; j < count; j++) {
+            var h = t.rules.getObject(s, u)
+            var i = t.createUnitForPlayer(h, ownerPlayer);
+            t.spawnObject(i, a);
+            teleport(self, t, {
+                obj: i,
+                destTile: a
+            })
+        }
+
+    }
+
+    async generateUnitObject2(player, ownerPlayer, unitName, unitType, count) {
         const wait = (ms) => {
             return new Promise(resolve => {
                 setTimeout(resolve, ms);
@@ -183,7 +246,7 @@ class GameApi {
             while (count > 0) {
                 var batchCountActual = Math.min(count, batchCount); // 实际处理的单位生成请求数量
 
-                for (let i = 0; i < batchCountActual; i++) {
+                for (let i = batchCountActual; i > 0; i--) {
                     // 生成单位
                     if (productionRateLimit > 0) {
                         // 生产速度限制处理
@@ -207,7 +270,7 @@ class GameApi {
                                 if (u !== self.gameUtils.zxe.ObjectType.Infantry) {
                                     throw new Error("Should not reach this line");
                                 }
-                                var E, O = self.gameUtils.JV(self.gameUtils.vLe.Infantry.SUB_CELLS.slice(0, batchCountActual));
+                                var E, O = self.gameUtils.JV(self.gameUtils.vLe.Infantry.SUB_CELLS.slice(0, 1));
                                 try {
                                     for (O.s(); !(E = O.n()).done;) {
                                         f = E.value;

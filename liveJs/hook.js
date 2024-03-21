@@ -153,7 +153,7 @@ const HookCore = function (api) {
         gameApi.editGameCredits(GameApi.GameApiEnum.PlayerType.Player, 999999999)
         gameApi.editGameCredits(GameApi.GameApiEnum.PlayerType.Ai, 999999999)
 
-        // gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, GameApi.GameApiEnum.PlayerType.Player, "HTNK", GameApi.GameApiEnum.ObjectType.Vehicle, 1000)
+        // gameApi.generateUnitObjectByEnum(GameApi.GameApiEnum.PlayerType.Player, GameApi.GameApiEnum.PlayerType.Player, "E1", GameApi.GameApiEnum.ObjectType.Infantry, 1024 * 4)
     }, 3000)
 }
 
